@@ -3,9 +3,12 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getAllKnowledgeObjects, getKnowledgeObject } from "@/lib/harness";
 import { getReferenceContent, markdownToHtml } from "@/lib/markdown";
+import { KNOWLEDGE_CATEGORY_LABEL } from "@/lib/types";
 
 export function generateStaticParams() {
-  return getAllKnowledgeObjects().map((item) => ({ slug: item.slug }));
+  return getAllKnowledgeObjects().map((item) => ({
+    slug: item.slug.split("/"),
+  }));
 }
 
 function formatDate(iso: string | null): string {
@@ -21,10 +24,10 @@ function formatDate(iso: string | null): string {
 export default async function SkillPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string[] }>;
 }) {
-  const { slug } = await params;
-  const item = getKnowledgeObject(slug);
+  const { slug: slugParts } = await params;
+  const item = getKnowledgeObject(slugParts.join("/"));
   if (!item) notFound();
 
   const bodyHtml = await markdownToHtml(item.body);
@@ -47,7 +50,7 @@ export default async function SkillPage({
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="bg-badge-bg text-badge-fg rounded-full px-2 py-0.5 text-xs font-medium">
-          skill
+          {KNOWLEDGE_CATEGORY_LABEL[item.category]}
         </span>
         <h1 className="text-title text-2xl font-semibold">{item.title}</h1>
       </div>
@@ -71,7 +74,7 @@ export default async function SkillPage({
               </h2>
               <div className="space-y-8">
                 {references.map((ref) => (
-                  <div key={ref.slug} id={ref.slug.split("/")[1]}>
+                  <div key={ref.slug} id={ref.id}>
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <h3 className="text-base font-semibold">{ref.title}</h3>
                       {ref.sourceUrl && (
@@ -149,7 +152,7 @@ export default async function SkillPage({
               <ul className="space-y-1">
                 {item.references.map((ref) => (
                   <li key={ref.slug}>
-                    <a href={`#${ref.slug.split("/")[1]}`}>{ref.title}</a>
+                    <a href={`#${ref.id}`}>{ref.title}</a>
                   </li>
                 ))}
               </ul>

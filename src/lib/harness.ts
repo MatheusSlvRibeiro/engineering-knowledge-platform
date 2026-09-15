@@ -3,7 +3,12 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import matter from "gray-matter";
-import type { KnowledgeObject, Provenance, ReferenceDoc } from "./types";
+import type {
+  KnowledgeCategory,
+  KnowledgeObject,
+  Provenance,
+  ReferenceDoc,
+} from "./types";
 
 function resolveHarnessPath(): string {
   const fromEnv = process.env.HARNESS_PATH?.trim();
@@ -96,9 +101,45 @@ function titleCase(slug: string): string {
     .join(" ");
 }
 
+/**
+ * A skill's category comes from its position in the tree: nested under
+ * `frontend/`/`backend/` for atomic stack skills, a `project-*` prefix for
+ * archetypes that compose those, a `workflow-*` prefix for process skills,
+ * anything else is harness mechanics ("meta").
+ */
+function deriveCategory(slug: string): KnowledgeCategory {
+  const [first] = slug.split("/");
+  if (first === "frontend" || first === "backend") return first;
+  if (slug.startsWith("project-")) return "project";
+  if (slug.startsWith("workflow-")) return "workflow";
+  return "meta";
+}
+
+/** Recursively finds every directory under `dir` that directly contains a SKILL.md. */
+function findSkillDirs(dir: string, base: string): string[] {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const found: string[] = [];
+
+  if (entries.some((entry) => entry.isFile() && entry.name === "SKILL.md")) {
+    found.push(base);
+  }
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    found.push(
+      ...findSkillDirs(
+        path.join(dir, entry.name),
+        path.posix.join(base, entry.name),
+      ),
+    );
+  }
+
+  return found;
+}
+
 function extractRelatedSkills(
   body: string,
-  knownSlugs: Set<string>,
+  slugLookup: Map<string, string>,
   selfSlug: string,
 ): string[] {
   const sectionMatch = body.match(
@@ -106,9 +147,10 @@ function extractRelatedSkills(
   );
   const section = sectionMatch ? sectionMatch[1] : "";
   const found = new Set<string>();
-  for (const match of section.matchAll(/`([a-z0-9-]+)`/g)) {
-    if (knownSlugs.has(match[1]) && match[1] !== selfSlug) {
-      found.add(match[1]);
+  for (const match of section.matchAll(/`([a-zA-Z0-9/_-]+)`/g)) {
+    const resolved = slugLookup.get(match[1]);
+    if (resolved && resolved !== selfSlug) {
+      found.add(resolved);
     }
   }
   return Array.from(found);
@@ -127,9 +169,11 @@ function loadReferences(skillDir: string, slug: string): ReferenceDoc[] {
       const raw = fs.readFileSync(absolutePath, "utf8");
       const heading = raw.match(/^#\s+(.+)$/m);
       const provenance = getFileProvenance(absolutePath);
+      const id = file.replace(/\.md$/, "");
       return {
-        slug: `${slug}/${file.replace(/\.md$/, "")}`,
-        title: heading ? heading[1] : titleCase(file.replace(/\.md$/, "")),
+        id,
+        slug: `${slug}/${id}`,
+        title: heading ? heading[1] : titleCase(id),
         path: provenance.sourcePath,
         sourceUrl: provenance.sourceUrl,
       };
@@ -154,15 +198,19 @@ export function getAllKnowledgeObjects(): KnowledgeObject[] {
   if (cache) return cache;
   if (!harnessAvailable()) return [];
 
-  const slugs = fs
-    .readdirSync(SKILLS_DIR)
-    .filter((entry) => fs.statSync(path.join(SKILLS_DIR, entry)).isDirectory())
-    .filter((entry) => fs.existsSync(path.join(SKILLS_DIR, entry, "SKILL.md")))
-    .sort();
-  const knownSlugs = new Set(slugs);
+  const slugs = findSkillDirs(SKILLS_DIR, "").sort();
+
+  // "Skills relacionadas" sections reference skills either by full path
+  // (`frontend/react`) or by leaf name alone (`eslint-prettier-husky`) —
+  // resolve both to the canonical slug.
+  const slugLookup = new Map<string, string>();
+  for (const slug of slugs) {
+    slugLookup.set(slug, slug);
+    slugLookup.set(path.posix.basename(slug), slug);
+  }
 
   const objects = slugs.map((slug): KnowledgeObject => {
-    const skillDir = path.join(SKILLS_DIR, slug);
+    const skillDir = path.join(SKILLS_DIR, ...slug.split("/"));
     const skillFile = path.join(skillDir, "SKILL.md");
     const raw = fs.readFileSync(skillFile, "utf8");
     const { data, content } = matter(raw);
@@ -172,13 +220,14 @@ export function getAllKnowledgeObjects(): KnowledgeObject[] {
     return {
       slug,
       type: "skill",
+      category: deriveCategory(slug),
       title:
         (data.name ? titleCase(String(data.name)) : null) ??
-        (headingMatch ? headingMatch[1] : titleCase(slug)),
+        (headingMatch ? headingMatch[1] : titleCase(path.posix.basename(slug))),
       description: data.description ? String(data.description) : "",
       body: content.trim(),
       references: loadReferences(skillDir, slug),
-      relatedSkills: extractRelatedSkills(content, knownSlugs, slug),
+      relatedSkills: extractRelatedSkills(content, slugLookup, slug),
       provenance: getFileProvenance(skillFile),
     };
   });

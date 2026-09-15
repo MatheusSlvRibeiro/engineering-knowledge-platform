@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { KnowledgeSummary } from "@/lib/types";
+import { KNOWLEDGE_CATEGORY_LABEL, type KnowledgeSummary } from "@/lib/types";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "data desconhecida";
@@ -40,7 +40,7 @@ export function KnowledgeListItem({
         </p>
         <div className="text-fg-muted mt-1 flex flex-wrap items-center gap-x-1 text-xs whitespace-nowrap">
           <span className="bg-badge-bg text-badge-fg rounded-full px-2 py-0.5 font-medium">
-            skill
+            {KNOWLEDGE_CATEGORY_LABEL[item.category]}
           </span>
           <span>·</span>
           <span>{item.referenceCount} documento(s) de referência</span>

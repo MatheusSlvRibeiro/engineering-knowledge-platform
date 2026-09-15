@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import type { KnowledgeSummary } from "@/lib/types";
+import {
+  KNOWLEDGE_CATEGORY_LABEL,
+  KNOWLEDGE_CATEGORY_ORDER,
+  type KnowledgeSummary,
+} from "@/lib/types";
 import { KnowledgeListItem } from "./knowledge-list-item";
 
 function normalize(value: string): string {
@@ -25,9 +29,16 @@ export function SkillSearch({ items }: { items: KnowledgeSummary[] }) {
     );
   }, [items, query]);
 
+  const groups = useMemo(() => {
+    return KNOWLEDGE_CATEGORY_ORDER.map((category) => ({
+      category,
+      items: filtered.filter((item) => item.category === category),
+    })).filter((group) => group.items.length > 0);
+  }, [filtered]);
+
   return (
     <div>
-      <div className="relative mb-5">
+      <div className="relative mb-6">
         <Search
           width={15}
           height={15}
@@ -44,16 +55,29 @@ export function SkillSearch({ items }: { items: KnowledgeSummary[] }) {
         />
       </div>
 
-      {filtered.length === 0 ? (
+      {groups.length === 0 ? (
         <p className="text-fg-muted text-sm">
           Nenhuma skill encontrada para &ldquo;{query}&rdquo;.
         </p>
       ) : (
-        <ol className="grid grid-cols-[min-content_minmax(0,1fr)] gap-x-2 gap-y-4">
-          {filtered.map((item, index) => (
-            <KnowledgeListItem key={item.slug} item={item} rank={index + 1} />
+        <div className="space-y-8">
+          {groups.map((group) => (
+            <section key={group.category}>
+              <h2 className="text-fg-subtle mb-3 text-xs font-semibold tracking-wide uppercase">
+                {KNOWLEDGE_CATEGORY_LABEL[group.category]}
+              </h2>
+              <ol className="grid grid-cols-[min-content_minmax(0,1fr)] gap-x-2 gap-y-4">
+                {group.items.map((item, index) => (
+                  <KnowledgeListItem
+                    key={item.slug}
+                    item={item}
+                    rank={index + 1}
+                  />
+                ))}
+              </ol>
+            </section>
           ))}
-        </ol>
+        </div>
       )}
     </div>
   );
