@@ -86,3 +86,16 @@ export const KNOWLEDGE_CATEGORY_LABEL: Record<KnowledgeCategory, string> = {
   workflow: "Workflow",
   meta: "Meta",
 };
+
+export const KNOWLEDGE_CATEGORY_DESCRIPTION: Record<KnowledgeCategory, string> =
+  {
+    project:
+      "Arquétipos completos: qual stack usar para cada tipo de produto, e por quê.",
+    frontend:
+      "Convenções atômicas de frontend — componentes, formulários, estilo, testes.",
+    backend:
+      "Convenções atômicas de backend — API, autenticação, banco de dados.",
+    workflow:
+      "Como o time trabalha — commits, branches, issues, PRs, project board.",
+    meta: "Como o próprio harness funciona — memória, evolução de skills, controle de qualidade.",
+  };

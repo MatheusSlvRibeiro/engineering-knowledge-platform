@@ -2,11 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import {
-  KNOWLEDGE_CATEGORY_LABEL,
-  KNOWLEDGE_CATEGORY_ORDER,
-  type KnowledgeSummary,
-} from "@/lib/types";
+import { KNOWLEDGE_CATEGORY_ORDER, type KnowledgeSummary } from "@/lib/types";
+import { CategoryCard } from "./category-card";
 import { KnowledgeListItem } from "./knowledge-list-item";
 
 function normalize(value: string): string {
@@ -29,12 +26,15 @@ export function SkillSearch({ items }: { items: KnowledgeSummary[] }) {
     );
   }, [items, query]);
 
-  const groups = useMemo(() => {
-    return KNOWLEDGE_CATEGORY_ORDER.map((category) => ({
-      category,
-      items: filtered.filter((item) => item.category === category),
-    })).filter((group) => group.items.length > 0);
-  }, [filtered]);
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+      counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
+    }
+    return counts;
+  }, [items]);
+
+  const isSearching = query.trim().length > 0;
 
   return (
     <div>
@@ -55,29 +55,28 @@ export function SkillSearch({ items }: { items: KnowledgeSummary[] }) {
         />
       </div>
 
-      {groups.length === 0 ? (
+      {!isSearching ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {KNOWLEDGE_CATEGORY_ORDER.filter((category) =>
+            categoryCounts.has(category),
+          ).map((category) => (
+            <CategoryCard
+              key={category}
+              category={category}
+              count={categoryCounts.get(category) ?? 0}
+            />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
         <p className="text-fg-muted text-sm">
           Nenhuma skill encontrada para &ldquo;{query}&rdquo;.
         </p>
       ) : (
-        <div className="space-y-8">
-          {groups.map((group) => (
-            <section key={group.category}>
-              <h2 className="text-fg-subtle mb-3 text-xs font-semibold tracking-wide uppercase">
-                {KNOWLEDGE_CATEGORY_LABEL[group.category]}
-              </h2>
-              <ol className="grid grid-cols-[min-content_minmax(0,1fr)] gap-x-2 gap-y-4">
-                {group.items.map((item, index) => (
-                  <KnowledgeListItem
-                    key={item.slug}
-                    item={item}
-                    rank={index + 1}
-                  />
-                ))}
-              </ol>
-            </section>
+        <ol className="grid grid-cols-[min-content_minmax(0,1fr)] gap-x-2 gap-y-4">
+          {filtered.map((item, index) => (
+            <KnowledgeListItem key={item.slug} item={item} rank={index + 1} />
           ))}
-        </div>
+        </ol>
       )}
     </div>
   );
