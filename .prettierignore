@@ -1,0 +1,34 @@
+# dependencies
+node_modules
+
+# next.js
+.next
+out
+build
+
+# lockfiles
+package-lock.json
+pnpm-lock.yaml
+
+# misc
+.DS_Store
+*.pem
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# user-authored prose, keep formatting untouched
+CLAUDE.md

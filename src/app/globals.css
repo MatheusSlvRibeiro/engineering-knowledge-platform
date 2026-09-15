@@ -1,0 +1,199 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --color-canvas: #ffffff;
+  --color-canvas-subtle: #f6f8fa;
+  --color-canvas-inset: #f6f8fa;
+  --color-fg: #1f2328;
+  --color-fg-muted: #59636e;
+  --color-fg-subtle: #818b98;
+  --color-border: #d1d9e0;
+  --color-border-muted: #e7e9ec;
+  --color-accent: #0969da;
+  --color-accent-emphasis: #0969da;
+  --color-success: #1a7f37;
+  --color-attention: #9a6700;
+  --color-danger: #d1242f;
+  --color-badge-bg: #eaeef2;
+  --color-badge-fg: #383b40;
+  --color-title: #2a3439;
+}
+
+.dark {
+  --color-canvas: #0d1117;
+  --color-canvas-subtle: #151b23;
+  --color-canvas-inset: #010409;
+  --color-fg: #f0f6fc;
+  --color-fg-muted: #9198a1;
+  --color-fg-subtle: #6e7681;
+  --color-border: #3d444d;
+  --color-border-muted: #262c36;
+  --color-accent: #4493f8;
+  --color-accent-emphasis: #1f6feb;
+  --color-success: #3fb950;
+  --color-attention: #d29922;
+  --color-danger: #f85149;
+  --color-badge-bg: #21262d;
+  --color-badge-fg: #c9d1d9;
+  --color-title: #ffffff;
+}
+
+@theme inline {
+  --color-canvas: var(--color-canvas);
+  --color-canvas-subtle: var(--color-canvas-subtle);
+  --color-canvas-inset: var(--color-canvas-inset);
+  --color-fg: var(--color-fg);
+  --color-fg-muted: var(--color-fg-muted);
+  --color-fg-subtle: var(--color-fg-subtle);
+  --color-border: var(--color-border);
+  --color-border-muted: var(--color-border-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-emphasis: var(--color-accent-emphasis);
+  --color-success: var(--color-success);
+  --color-attention: var(--color-attention);
+  --color-danger: var(--color-danger);
+  --color-badge-bg: var(--color-badge-bg);
+  --color-badge-fg: var(--color-badge-fg);
+  --color-title: var(--color-title);
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica,
+    Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+@layer base {
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.knowledge-body {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.knowledge-body h1,
+.knowledge-body h2,
+.knowledge-body h3 {
+  font-weight: 600;
+  margin-top: 1.75em;
+  margin-bottom: 0.6em;
+  border-bottom: 1px solid var(--color-border-muted);
+  padding-bottom: 0.3em;
+}
+
+.knowledge-body h1:first-child,
+.knowledge-body h2:first-child {
+  margin-top: 0;
+}
+
+.knowledge-body h3 {
+  border-bottom: none;
+}
+
+.knowledge-body p,
+.knowledge-body ul,
+.knowledge-body ol {
+  margin-bottom: 1em;
+}
+
+.knowledge-body ul,
+.knowledge-body ol {
+  padding-left: 1.5em;
+}
+
+.knowledge-body ul {
+  list-style: disc;
+}
+
+.knowledge-body ol {
+  list-style: decimal;
+}
+
+.knowledge-body li {
+  margin-bottom: 0.3em;
+}
+
+.knowledge-body li > ul,
+.knowledge-body li > ol {
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+
+.knowledge-body code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--color-canvas-subtle);
+  border: 1px solid var(--color-border-muted);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+.knowledge-body pre {
+  background: var(--color-canvas-subtle);
+  border: 1px solid var(--color-border-muted);
+  border-radius: 6px;
+  padding: 1em;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+.knowledge-body pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.knowledge-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1em;
+  font-size: 0.9em;
+}
+
+.knowledge-body th,
+.knowledge-body td {
+  border: 1px solid var(--color-border-muted);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.knowledge-body th {
+  background: var(--color-canvas-subtle);
+}
+
+.knowledge-body blockquote {
+  border-left: 3px solid var(--color-border);
+  color: var(--color-fg-muted);
+  padding-left: 1em;
+  margin: 1em 0;
+}
