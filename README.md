@@ -36,6 +36,21 @@ cp .env.example .env.local
 # edit HARNESS_PATH to point at your clone
 ```
 
+## Deploying (Vercel)
+
+`HARNESS_PATH` only resolves on a machine that already has the harness repo cloned, which a
+fresh Vercel build doesn't. `scripts/fetch-harness.mjs` runs automatically before `next build`
+(wired as the `prebuild` npm script) and handles this: if `HARNESS_PATH` isn't set and there's no
+`~/harness-engineering` on disk, it does a full clone of
+[`harness-engineering`](https://github.com/MatheusSlvRibeiro/harness-engineering) into
+`.harness-cache/` (gitignored) and `src/lib/harness.ts` falls back to that path automatically.
+A full clone (not shallow) is required — provenance is read per-file via `git log`, which needs
+real history to point at the commit that actually last touched each file.
+
+No project-specific environment variables are required to deploy: just import the repo into
+Vercel and build. Set `HARNESS_PATH` only if you want to pin a different harness repo/branch, or
+`HARNESS_REPO_URL` to point the auto-clone at a fork.
+
 ## Design constraints (MVP)
 
 - No authentication, no signup, no database. This is intentional, not a missing feature.

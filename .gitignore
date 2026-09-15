@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# build-time clone of the harness repo (see scripts/fetch-harness.mjs)
+.harness-cache/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

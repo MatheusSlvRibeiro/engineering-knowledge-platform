@@ -5,10 +5,21 @@ import path from "path";
 import matter from "gray-matter";
 import type { KnowledgeObject, Provenance, ReferenceDoc } from "./types";
 
+function resolveHarnessPath(): string {
+  const fromEnv = process.env.HARNESS_PATH?.trim();
+  if (fromEnv) return path.resolve(fromEnv);
+
+  // Local dev: reuse the developer's own clone if there's one on disk.
+  const homeClone = path.join(os.homedir(), "harness-engineering");
+  if (fs.existsSync(homeClone)) return homeClone;
+
+  // CI/Vercel: fall back to the clone `scripts/fetch-harness.mjs` makes
+  // during `npm run build` (see package.json "prebuild").
+  return path.join(process.cwd(), ".harness-cache", "harness-engineering");
+}
+
 const HARNESS_PATH = path.resolve(
-  /* turbopackIgnore: true */
-  process.env.HARNESS_PATH?.trim() ||
-    path.join(os.homedir(), "harness-engineering"),
+  /* turbopackIgnore: true */ resolveHarnessPath(),
 );
 const SKILLS_DIR = path.join(HARNESS_PATH, "skills");
 
